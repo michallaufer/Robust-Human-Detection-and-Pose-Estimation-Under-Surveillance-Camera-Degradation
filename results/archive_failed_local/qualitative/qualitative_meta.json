@@ -1,0 +1,38 @@
+[
+  {
+    "image_id": 2473,
+    "distortion": "low_light",
+    "severity": "medium",
+    "enh": {
+      "enhancement": "clahe_gamma",
+      "clahe_clip_limit": 2.0,
+      "clahe_tile_size": 8,
+      "brighten_gamma": 0.6,
+      "method_used": "clahe_gamma"
+    }
+  },
+  {
+    "image_id": 2473,
+    "distortion": "motion_blur",
+    "severity": "medium",
+    "enh": {
+      "enhancement_method": "stable_unsharp_mask",
+      "unsharp_sigma": 1.2,
+      "unsharp_amount": 0.6,
+      "source_kernel_length": 15,
+      "source_angle": 45.0
+    }
+  },
+  {
+    "image_id": 2473,
+    "distortion": "jpeg",
+    "severity": "medium",
+    "enh": {
+      "enhancement": "bilateral",
+      "method_used": "bilateral",
+      "bilateral_d": 9,
+      "bilateral_sigma_color": 75.0,
+      "bilateral_sigma_space": 75.0
+    }
+  }
+]

@@ -1,0 +1,51 @@
+low_light:
+  mild:
+    gamma: 1.5
+    brightness_scale: 1.0
+  medium:
+    gamma: 2.2
+    brightness_scale: 1.0
+  severe:
+    gamma: 3.0
+    brightness_scale: 1.0
+
+motion_blur:
+  mild:
+    kernel_length: 5
+    angle: 0
+  medium:
+    kernel_length: 15
+    angle: 45
+  severe:
+    kernel_length: 25
+    angle: 30
+  train_random_angle: true
+
+jpeg:
+  mild:
+    quality: 50
+  medium:
+    quality: 20
+  severe:
+    quality: 5
+
+enhancement:
+  low_light:
+    clahe_clip_limit: 2.0
+    clahe_tile_size: 8
+    brighten_gamma: 0.6
+  motion_blur:
+    method: unsharp
+    unsharp_amount: 0.6
+    unsharp_sigma: 1.2
+  jpeg:
+    bilateral_d: 9
+    bilateral_sigma_color: 75
+    bilateral_sigma_space: 75
+
+boundary:
+  canny_low: 50
+  canny_high: 150
+  gaussian_ksize: 3
+  tolerance_px: 3
+  person_band_px: 21

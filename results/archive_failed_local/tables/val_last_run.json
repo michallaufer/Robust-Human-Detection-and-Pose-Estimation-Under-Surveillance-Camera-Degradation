@@ -1,0 +1,15 @@
+{
+  "run_id": "f7ac504399",
+  "device": "cpu",
+  "imgsz": 416,
+  "max_images": 150,
+  "tasks": [
+    "boundary",
+    "detection",
+    "pose"
+  ],
+  "pose_weights": "yolov8n-pose.pt",
+  "det_weights": "yolov8n.pt",
+  "per_image": "C:\\Users\\micha\\Documents\\studies\\Masters\\digital image processing\\Robust Human Detection\\results\\coco_person\\tables\\val_per_image.csv",
+  "aggregate": "C:\\Users\\micha\\Documents\\studies\\Masters\\digital image processing\\Robust Human Detection\\results\\coco_person\\tables\\val_aggregate.csv"
+}

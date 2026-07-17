@@ -1,0 +1,36 @@
+# COCO person subset — selective image download (never full train2017.zip)
+coco_root: data/raw/coco
+selected_root: data/selected
+splits_dir: data/splits
+yolo_pose_dir: data/yolo_pose
+
+# Defaults for final course runs (override via CLI)
+train_images: 800
+val_images: 150
+seed: 42
+
+person_category_id: 1
+
+annotations:
+  instances_train: annotations/instances_train2017.json
+  instances_val: annotations/instances_val2017.json
+  keypoints_train: annotations/person_keypoints_train2017.json
+  keypoints_val: annotations/person_keypoints_val2017.json
+
+# Prefer images with keypoints for pose evaluation/training
+require_keypoints: true
+prefer_visible_keypoints: true
+
+size_bins:
+  small_max_area: 1024   # 32^2
+  medium_max_area: 9216  # 96^2
+
+# Image URLs for selective download
+image_url_templates:
+  train: "http://images.cocodataset.org/train2017/{file_name}"
+  val: "http://images.cocodataset.org/val2017/{file_name}"
+
+download:
+  retries: 3
+  timeout_sec: 60
+  verify_not_empty: true

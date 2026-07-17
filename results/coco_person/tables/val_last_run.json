@@ -1,0 +1,13 @@
+{
+  "run_id": "8120245a4c",
+  "device": "0",
+  "imgsz": 416,
+  "max_images": 150,
+  "tasks": [
+    "pose"
+  ],
+  "pose_weights": "/content/robust_human_eval/results/coco_person/checkpoints/pose_robust_ft_best.pt",
+  "det_weights": "yolov8n.pt",
+  "per_image": "/content/robust_human_eval/results/coco_person/tables/val_per_image.csv",
+  "aggregate": "/content/robust_human_eval/results/coco_person/tables/val_aggregate.csv"
+}

@@ -1,0 +1,7 @@
+task,condition,distortion,severity,enhanced,model_name,weights_path,enhancement_method,psnr,mse,boundary_precision,boundary_recall,boundary_f1,mean_edge_distance,num_gt,num_predictions,true_positives,false_positives,false_negatives,precision,recall,f1,miss_rate,mean_confidence,num_gt_people,num_matched_people,pck_02,pck_05,normalized_keypoint_error,oks,n_images
+boundary,clean,,,False,boundary,,,,,,,,,,,,,,,,,,,,,,,,,3
+boundary,clean,,,False,canny,,,,,0.4096393761032532,0.8522421650750869,0.5468373276068407,3.0472252380768983,,,,,,,,,,,,,,,,,151
+detection,clean,,,False,detection,,,,,,,,,,,,,,,,,,,,,,,,,3
+detection,clean,,,False,yolov8n,yolov8n.pt,,,,,,,,7.375838926174497,5.926174496644295,4.8389261744966445,1.087248322147651,2.5369127516778525,0.8577025931694309,0.7354328929832286,0.7697105522945018,0.26456710701677144,0.6530483003030687,,,,,,,149
+pose,clean,,,False,pose,,,,,,,,,,,,,,,,,,,,,,,,,3
+pose,clean,,,False,yolov8n-pose,yolov8n-pose.pt,,,,,,,,,,,,,,,,,,7.398648648648648,4.331081081081081,0.9306657200577894,0.9774571148529482,0.05243386167866282,0.429884590132311,148

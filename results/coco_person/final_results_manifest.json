@@ -1,0 +1,42 @@
+{
+  "dataset_name": "coco_person",
+  "dataset_split": "val",
+  "subset_size": 150,
+  "subset_seed": 42,
+  "per_image_csv": "tables/val_per_image.csv",
+  "per_image_rows": 11400,
+  "aggregate_csv": "tables/val_aggregate.csv",
+  "aggregate_rows": 76,
+  "duplicate_experiment_rows": 0,
+  "failed_rows": 0,
+  "images_per_group": 150,
+  "tasks": [
+    "boundary",
+    "detection",
+    "pose"
+  ],
+  "distortions": [
+    "low_light",
+    "motion_blur",
+    "jpeg"
+  ],
+  "severities": [
+    "mild",
+    "medium",
+    "severe"
+  ],
+  "detection_primary_metric": "f1",
+  "motion_blur_enhancement": {
+    "method": "stable_unsharp_mask",
+    "sigma": 1.2,
+    "amount": 0.6
+  },
+  "pose_models": [
+    "yolov8n-pose",
+    "pose_robust_ft_best"
+  ],
+  "notes": [
+    "The fine-tuned pose model underperformed the pretrained pose model in all 19 matched conditions.",
+    "tables/val_last_run.json describes only the last fine-tuned evaluation stage; this manifest describes the merged final result set."
+  ]
+}

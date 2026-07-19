@@ -5,18 +5,33 @@
 ## Objective
 
 Evaluate how surveillance-camera degradation affects three levels of human
-perception—person boundaries, person detection, and body-pose estimation—and
+perception—person-boundary extraction, person detection, and human pose estimation—and
 measure whether classical enhancement or corruption-aware pose fine-tuning
 recovers performance. The final experiment uses the same deterministic
 150-image COCO-person validation subset for every condition.
 
+## Key findings
+
+- Motion blur caused the largest overall degradation across the three tasks.
+- Severe JPEG enhancement produced the strongest recovery: detection F1
+  improved from **0.431 to 0.600**.
+- Improving low-level boundary quality did not always improve detection or
+  pose estimation.
+- The 800-image corruption-aware fine-tuning run underperformed the original
+  pretrained pose model.
+- Final outputs contain **11,400 validated per-image rows**, with no duplicate
+  experiment rows and no failed evaluations.
+
 ## Motivation
 
-Fixed surveillance cameras frequently produce degraded imagery: nighttime illumination, motion blur from moving people / slow shutters, and heavy compression on bandwidth-limited links. A system may still detect that a person exists while failing to localize limbs. This project measures that gap.
+Fixed surveillance cameras frequently produce degraded imagery: nighttime illumination, motion blur from subject motion or slow shutter speeds, and heavy compression on bandwidth-limited links. A system may still detect that a person exists while failing to localize limbs. This project measures that gap.
 
 ## Research question
 
-> Does human pose estimation fail before person detection under surveillance-like degradation, and does corruption-aware fine-tuning recover more performance than classical image enhancement?
+> How do person-boundary extraction, person detection, and human pose
+> estimation respond to increasing surveillance-like degradation, and how
+> much performance can be recovered through classical enhancement or
+> corruption-aware fine-tuning?
 
 ## Course requirements mapping
 
@@ -80,12 +95,15 @@ Quality vs clean is reported as **MSE** and **PSNR** (not “SNR”).
 - Mixture: 25% clean + 25% each distortion; severities sampled uniformly.
 - Geometry / labels unchanged.
 - Training used the selected 800-image COCO-person training subset exported to
-  Ultralytics pose format and was run in Colab on a GPU for 20 epochs at
-  416-pixel input size.
+  Ultralytics pose format and was run in Colab on a GPU at 416-pixel input
+  resolution.
+- Training was configured for a maximum of 20 epochs with early stopping
+  enabled. It stopped early after validation performance stopped improving,
+  and the best checkpoint was selected from the completed epochs.
 - The resulting checkpoint is identified as `pose_robust_ft_best`.
 - The fine-tuned model was evaluated on exactly the same 150 validation images
   and 19 clean/distorted/enhanced conditions as the pretrained pose model.
-- Fine-tuning was completed as an experimental intervention; it did **not**
+- Fine-tuning was evaluated as a robustness intervention; it did **not**
   improve final pose localization.
 
 ## Experimental matrix
@@ -99,8 +117,13 @@ Quality vs clean is reported as **MSE** and **PSNR** (not “SNR”).
 
 - Boundary: precision, recall, F1, mean edge distance (person band)
 - Detection: precision, recall, F1, miss rate, mean confidence, TP/FP/FN (IoU≥0.5 matching)
-- Pose: OKS (simplified per-person mean), PCK@0.2 / @0.5 (norm by max(box_w, box_h)), normalized keypoint error (box diagonal), joint groups
+- Pose: simplified per-person OKS, PCK@0.2 and PCK@0.5 normalized by
+  `max(box_width, box_height)`, and normalized keypoint error using the box
+  diagonal
 - Image quality: MSE, PSNR vs clean
+
+MSE and PSNR quantify image degradation relative to the clean reference; they
+are not used as substitutes for task-level accuracy.
 
 Detection plots and reported comparisons use **F1 and recall**. Official COCO
 AP50 was not computed and is not claimed.
@@ -145,38 +168,39 @@ python scripts/09_package_colab_dataset.py
 
 ## Evaluation commands
 
-Clean smoke:
+### Smoke evaluation
+
+Use a separate temporary result directory or clear the current result tables
+before running smoke tests.
 
 ```bash
 python scripts/01_run_clean.py --device auto --max-images 10 --imgsz 416
+python scripts/02_run_distort_enhance.py --device auto --max-images 10 --imgsz 416
 ```
 
-Distort + enhance smoke:
+### Fresh final evaluation
+
+Start from an empty `results/coco_person/tables/` directory. Do not mix smoke
+results with the final 150-image evaluation.
 
 ```bash
-python scripts/02_run_distort_enhance.py --device auto --max-images 10 --imgsz 416 --resume
+python scripts/01_run_clean.py --device auto --max-images 150 --imgsz 416
+python scripts/02_run_distort_enhance.py --device auto --max-images 150 --imgsz 416
 ```
 
-Final local evaluation:
-
-```bash
-python scripts/01_run_clean.py --device auto --max-images 150 --imgsz 416 --resume
-python scripts/02_run_distort_enhance.py --device auto --max-images 150 --imgsz 416 --resume
-```
-
-Fine-tune (local, optional / slow on CPU):
+Fine-tune locally only if needed; CPU training may be very slow:
 
 ```bash
 python scripts/04_finetune_pose.py --device auto --epochs 20 --imgsz 416 --patience 5
 ```
 
-Evaluate fine-tuned weights:
+Evaluate the fine-tuned weights:
 
 ```bash
-python scripts/05_eval_finetuned.py --weights results/coco_person/checkpoints/pose_robust_ft_best.pt --device auto --max-images 150 --imgsz 416 --resume
+python scripts/05_eval_finetuned.py --weights results/coco_person/checkpoints/pose_robust_ft_best.pt --device auto --max-images 150 --imgsz 416
 ```
 
-Validate + plots + qualitative:
+Validate and generate outputs:
 
 ```bash
 python scripts/08_validate_results.py
@@ -184,12 +208,23 @@ python scripts/06_make_plots.py
 python scripts/07_visualize_samples.py --severity medium --device auto
 ```
 
-## Colab fine-tuning workflow
+Use `--resume` only to continue an interrupted run after confirming that the
+existing table contains no duplicate experiment keys.
 
-1. Package: `python scripts/09_package_colab_dataset.py`
-2. Upload zip to Google Drive
-3. Open `colab/train_pose_colab.ipynb` (GPU runtime)
-4. Download `pose_robust_ft_best.pt` and run `05_eval_finetuned.py` locally
+## Colab workflows
+
+### Fine-tuning
+
+1. Package the training subset with `python scripts/09_package_colab_dataset.py`.
+2. Upload the package to Google Drive.
+3. Open `colab/train_pose_colab.ipynb` with a GPU runtime.
+4. Save the resulting `pose_robust_ft_best.pt` checkpoint.
+
+### Final evaluation
+
+Use `notebooks/robust_human_eval_colab.ipynb` for a fresh, complete evaluation.
+The notebook starts from a clean result directory, repairs local paths, runs all
+three evaluation stages, validates exact row counts, and exports the final ZIP.
 
 ## Results
 
@@ -239,11 +274,29 @@ not provide enough diversity or optimization stability to preserve the
 pretrained model's localization accuracy. Fine-tuning should therefore not be
 presented as a recovery method in this experiment.
 
-Validated figure source-data CSVs are committed under
-`results/coco_person/figures/`. Run `python scripts/06_make_plots.py` to render
-the corresponding PNG/PDF figures from `val_aggregate.csv`.
+All final figures are generated from
+`results/coco_person/tables/val_aggregate.csv`. Run
+`python scripts/06_make_plots.py` to regenerate the PNG/PDF outputs.
 
-## Hypotheses
+## Selected figures
+
+### Detection F1 versus severity
+
+![Detection F1 versus severity](results/coco_person/figures/det_f1_vs_severity.png)
+
+### Pose PCK versus severity
+
+![Pose PCK versus severity](results/coco_person/figures/pose_pck_vs_severity.png)
+
+### Boundary F1 versus severity
+
+![Boundary F1 versus severity](results/coco_person/figures/boundary_f1_vs_severity.png)
+
+### Qualitative comparison
+
+![Qualitative comparison](results/coco_person/qualitative/sample_2473_medium.png)
+
+## Hypothesis outcomes
 
 1. **Supported:** higher severity generally reduced task performance.
 2. **Supported:** motion blur was the most damaging distortion overall,
@@ -286,9 +339,8 @@ optimization/configuration mismatch in the small corruption-aware run.
 - Pose OKS is a per-instance mean summary, not official COCO keypoint AP.
 - The final aggregate table does not include complete per-joint or person-size
   metrics, so those hypotheses cannot be fully quantified from final outputs.
-- Motion-blur enhancement metadata is blank in the aggregate CSV, but the
-  verified final pipeline and qualitative metadata identify the method as
-  stable unsharp masking (σ=1.2, amount=0.6).
+- Motion-blur enhancement uses fixed stable unsharp-mask parameters
+  (σ=1.2, amount=0.6); it is not a learned or blind-deconvolution method.
 - One small fine-tuning run is not sufficient to establish that
   corruption-aware training is generally ineffective.
 - Colab and local environments may produce minor numerical differences.
@@ -300,6 +352,7 @@ optimization/configuration mismatch in the small corruption-aware run.
 - Resume keys: `image_id|task|condition|model|weights|enhanced`
 - `pytest -q` for unit tests (no full COCO required)
 - Final validation: `python scripts/08_validate_results.py`
+- Automated tests: `python -m pytest -q` — **15 passed**
 - Figures are derived from the committed `val_aggregate.csv`; neither final
   result CSV is regenerated by plotting.
 
